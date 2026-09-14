@@ -1,0 +1,4 @@
+com\example\bankcrud\BankAccount.class
+com\example\bankcrud\BankAccountRepository.class
+com\example\bankcrud\BankCrudApplication.class
+com\example\bankcrud\BankAccountController.class

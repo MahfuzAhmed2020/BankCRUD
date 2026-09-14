@@ -1,0 +1,498 @@
+mvn clean package -DskipTes
+docker ps    
+ docker compose up --build
+ docker exec -it bankcrud-mysql mysql -u root -p
+
+
+
+http://localhost:8099/
+
+++++++++++++++++++++++++++++++++++++++++++++
+
+# BankCRUD – Simple Spring Boot CRUD Application
+
+## 1. Project Description
+
+BankCRUD is a simple **Spring Boot CRUD application** that manages bank account information.
+
+The application provides a REST API and a simple static HTML user interface.
+
+Users can:
+
+* Create a bank account
+* View all bank accounts
+* View one bank account
+* Update a bank account
+* Delete a bank account
+
+The application uses:
+
+* Java 21
+* Spring Boot
+* Spring Web
+* Spring Data JPA
+* Hibernate
+* MySQL 8
+* HTML
+* CSS
+* JavaScript
+* Maven
+* Docker
+* Docker Compose
+
+**No authentication or authorization is used in this demonstration project.**
+
+---
+
+# 2. Application Architecture
+
+```text
+              Browser
+                 |
+                 | http://localhost:8099/
+                 |
+                 v
+        +------------------+
+        |    Spring Boot   |
+        |      BankCRUD    |
+        |      Port 8099   |
+        +------------------+
+                 |
+                 | JPA / Hibernate
+                 |
+                 v
+        +------------------+
+        |      MySQL       |
+        |    Port 3309     |
+        |    Database      |
+        |     bankcrud     |
+        +------------------+
+```
+
+---
+
+# 3. Bank Account Data
+
+The application stores the following information:
+
+| Field           | Example | Description                |
+| --------------- | ------- | -------------------------- |
+| `id`            | `1`     | Automatically generated ID |
+| `customerName`  | `John`  | Customer name              |
+| `accountNumber` | `6382`  | Bank account number        |
+| `balance`       | `425`   | Account balance            |
+
+Example JSON:
+
+```json
+{
+    "customerName": "John",
+    "accountNumber": "6382",
+    "balance": 425
+}
+```
+
+The `id` does not need to be provided when creating an account because MySQL generates it automatically.
+
+---
+
+# 4. REST API Endpoints
+
+## Create Account
+
+```text
+POST http://localhost:8099/api/accounts
+```
+
+Example body:
+
+```json
+{
+    "customerName": "John",
+    "accountNumber": "6382",
+    "balance": 425
+}
+```
+
+---
+
+## Get All Accounts
+
+```text
+GET http://localhost:8099/api/accounts
+```
+
+---
+
+## Get One Account
+
+```text
+GET http://localhost:8099/api/accounts/1
+```
+
+---
+
+## Update Account
+
+```text
+PUT http://localhost:8099/api/accounts/1
+```
+
+Example body:
+
+```json
+{
+    "customerName": "John",
+    "accountNumber": "6382",
+    "balance": 750
+}
+```
+
+---
+
+## Delete Account
+
+```text
+DELETE http://localhost:8099/api/accounts/1
+```
+
+---
+
+# 5. Postman Random Test Data
+
+The POST request can generate random test data.
+
+### Pre-request Script
+
+```javascript
+const names = ["Ali", "John", "Sara", "Mike", "Emma"];
+
+const name = names[Math.floor(Math.random() * names.length)];
+
+const account = Math.floor(1000 + Math.random() * 9000);
+
+const balance = Math.floor(Math.random() * 900) + 100;
+
+pm.variables.set("customerName", name);
+pm.variables.set("accountNumber", account.toString());
+pm.variables.set("balance", balance);
+```
+
+### POST Body
+
+```json
+{
+    "customerName": "{{customerName}}",
+    "accountNumber": "{{accountNumber}}",
+    "balance": {{balance}}
+}
+```
+
+Every time **Send** is clicked, Postman generates new values.
+
+Example:
+
+```json
+{
+    "customerName": "Sara",
+    "accountNumber": "2175",
+    "balance": 781
+}
+```
+
+---
+
+# 6. Build the Application
+
+Open a terminal in the BankCRUD project folder.
+
+Run:
+
+```powershell
+mvn clean package -DskipTests
+```
+
+### What this does
+
+* Cleans the previous build
+* Compiles the Java code
+* Packages the application
+* Creates the Spring Boot JAR file
+
+The JAR will be created under:
+
+```text
+target/
+```
+
+---
+
+# 7. Check Docker Containers
+
+Run:
+
+```powershell
+docker ps
+```
+
+This displays currently running Docker containers.
+
+After BankCRUD is started, you should see containers similar to:
+
+```text
+bankcrud-app
+bankcrud-mysql
+```
+
+---
+
+# 8. Start BankCRUD with Docker
+
+Run:
+
+```powershell
+docker compose up --build
+```
+
+### What this does
+
+Docker Compose starts:
+
+1. MySQL container
+2. Spring Boot application container
+
+The `--build` option tells Docker to build the BankCRUD application image using the Dockerfile.
+
+---
+
+# 9. Access the Application
+
+Open your browser:
+
+```text
+http://localhost:8099/
+```
+
+This opens the static BankCRUD UI.
+
+From the UI you can:
+
+* Add account
+* View accounts
+* Edit account
+* Delete account
+
+---
+
+# 10. Access MySQL
+
+The MySQL container is available through host port **3309**.
+
+Run:
+
+```powershell
+docker exec -it bankcrud-mysql mysql -u root -p
+```
+
+When prompted for the password, enter:
+
+```text
+root
+```
+
+---
+
+# 11. Check the Database
+
+After entering MySQL:
+
+```sql
+SHOW DATABASES;
+```
+
+Select the BankCRUD database:
+
+```sql
+USE bankcrud;
+```
+
+Show tables:
+
+```sql
+SHOW TABLES;
+```
+
+View bank accounts:
+
+```sql
+SELECT * FROM bank_account;
+```
+
+---
+
+# 12. Docker Ports
+
+| Component       |   Port |
+| --------------- | -----: |
+| Spring Boot     | `8099` |
+| MySQL Host      | `3309` |
+| MySQL Container | `3306` |
+
+The browser uses:
+
+```text
+localhost:8099
+```
+
+MySQL is accessed from the Windows host through:
+
+```text
+localhost:3309
+```
+
+Inside Docker, Spring Boot connects to MySQL using:
+
+```text
+mysql:3306
+```
+
+The reason is that `mysql` is the Docker Compose service name.
+
+---
+
+# 13. Stop the Application
+
+To stop the containers:
+
+```powershell
+docker compose down
+```
+
+This stops and removes the containers but keeps the MySQL data volume.
+
+---
+
+# 14. Remove Containers and Database Data
+
+If you want to completely remove the containers and MySQL volume:
+
+```powershell
+docker compose down -v
+```
+
+**Warning:** This deletes the stored MySQL data for this Docker Compose project.
+
+---
+
+# 15. Quick Start
+
+For future use, the basic commands are:
+
+### Build
+
+```powershell
+mvn clean package -DskipTests
+```
+
+### Check containers
+
+```powershell
+docker ps
+```
+
+### Start application
+
+```powershell
+docker compose up --build
+```
+
+### Open UI
+
+```text
+http://localhost:8099/
+```
+
+### Open MySQL
+
+```powershell
+docker exec -it bankcrud-mysql mysql -u root -p
+```
+
+### Stop application
+
+```powershell
+docker compose down
+```
+
+---
+
+# 16. Simple Workflow
+
+```text
+1. Write Java code
+       ↓
+2. mvn clean package -DskipTests
+       ↓
+3. Docker builds Spring Boot image
+       ↓
+4. docker compose up --build
+       ↓
+5. MySQL container starts
+       ↓
+6. Spring Boot container starts
+       ↓
+7. Open http://localhost:8099/
+       ↓
+8. Add / View / Update / Delete accounts
+       ↓
+9. Data is stored in MySQL
+```
+
+## Project Purpose
+
+This project is intended as a **simple demonstration of Spring Boot CRUD, REST API, MySQL, Docker, Docker Compose, and a static web UI**. It is not intended to represent a production banking system.
+
+
++++++++++++++++++++++++++++++++++++++++
+
+//javascript for random name
+
+const names = ["Ali", "John", "Sara", "Mike", "Emma"];
+
+const name = names[Math.floor(Math.random() * names.length)];
+
+const account = Math.floor(1000 + Math.random() * 9000);
+
+const balance = Math.floor(Math.random() * 900) + 100;
+
+pm.variables.set("customerName", name);
+pm.variables.set("accountNumber", account.toString());
+pm.variables.set("balance", balance);
+
+console.log(name);
+console.log(account);
+console.log(balance);
+
+--------------------------------------------
+
+{
+    "customerName": "{{customerName}}",
+    "accountNumber": "{{accountNumber}}",
+    "balance": {{balance}}
+}
+
+// {
+//     "customerName": "jjkk",
+//     "accountNumber": "5555555",
+//     "balance": 22222
+// }
+
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+php MY aDMIN FOR THE mYsQL
+
+
+
+http://localhost:8088

@@ -1,0 +1,42 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: bankcrud-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bankcrud
+    ports:
+      - "3309:3306"
+    volumes:
+      - bankcrud_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot" ]
+      timeout: 5s
+      retries: 10
+      interval: 5s
+
+  app:
+    build: .
+    container_name: bankcrud-app
+    ports:
+      - "8099:8099"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: bankcrud-phpmyadmin
+    ports:
+      - "8088:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      - mysql
+
+volumes:
+  bankcrud_mysql_data:

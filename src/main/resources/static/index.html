@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BankCRUD</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #333;
+            color: white;
+        }
+
+        .edit {
+            background: orange;
+        }
+
+        .delete {
+            background: red;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>BankCRUD - Bank Account Management</h1>
+
+    <form id="accountForm">
+        <input type="text" id="customerName" placeholder="Customer name" required>
+        <input type="text" id="accountNumber" placeholder="Account number" required>
+        <input type="number" id="balance" placeholder="Balance" step="0.01" required>
+        <button type="submit">Save Account</button>
+        <button type="button" onclick="clearForm()">Clear</button>
+    </form>
+
+    <h2>Bank Accounts</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer Name</th>
+                <th>Account Number</th>
+                <th>Balance</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="accountTable"></tbody>
+    </table>
+
+    <script>
+        const API_URL = "/api/accounts";
+        let editingId = null;
+
+        async function loadAccounts() {
+            const response = await fetch(API_URL);
+            const accounts = await response.json();
+            const table = document.getElementById("accountTable");
+            table.innerHTML = "";
+
+            accounts.forEach(account => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${account.id}</td>
+                    <td>${account.customerName}</td>
+                    <td>${account.accountNumber}</td>
+                    <td>$${Number(account.balance).toFixed(2)}</td>
+                    <td>
+                        <button class="edit" onclick="editAccount(${account.id})">Edit</button>
+                        <button class="delete" onclick="deleteAccount(${account.id})">Delete</button>
+                    </td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        document.getElementById("accountForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const account = {
+                customerName: document.getElementById("customerName").value,
+                accountNumber: document.getElementById("accountNumber").value,
+                balance: Number(document.getElementById("balance").value)
+            };
+
+            let url = API_URL;
+            let method = "POST";
+
+            if (editingId !== null) {
+                url = API_URL + "/" + editingId;
+                method = "PUT";
+            }
+
+            await fetch(url, {
+                method: method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(account)
+            });
+
+            clearForm();
+            loadAccounts();
+        });
+
+        async function editAccount(id) {
+            const response = await fetch(API_URL + "/" + id);
+            const account = await response.json();
+
+            document.getElementById("customerName").value = account.customerName;
+            document.getElementById("accountNumber").value = account.accountNumber;
+            document.getElementById("balance").value = account.balance;
+            editingId = id;
+        }
+
+        async function deleteAccount(id) {
+            if (!confirm("Delete this bank account?")) return;
+
+            await fetch(API_URL + "/" + id, { method: "DELETE" });
+            loadAccounts();
+        }
+
+        function clearForm() {
+            document.getElementById("accountForm").reset();
+            editingId = null;
+        }
+
+        loadAccounts();
+    </script>
+</body>
+
+</html>
