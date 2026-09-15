@@ -2,7 +2,8 @@ mvn clean package -DskipTes
 docker ps    
  docker compose up --build
  docker exec -it bankcrud-mysql mysql -u root -p
-
+docker compose up -d --build {Runs containers in the background}
+docker stop $(docker ps -q) {Stop all running containers}
 
 
 http://localhost:8099/
@@ -496,3 +497,53 @@ php MY aDMIN FOR THE mYsQL
 
 
 http://localhost:8088
+
+
+++++++++++++++++++++++++++++++++++++
+
+
+Swagger documentstion
+
+http://localhost:8091/swagger-ui/index.html
+
+        <dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    <version>2.8.13</version>
+</dependency>
+
+------------------------
+
+
+@Configuration
+public class OpenApiConfig {
+
+    @Bean
+    public OpenAPI bankCrudOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Bank CRUD API")
+                        .version("1.0")
+                        .description("REST API for Bank CRUD operations"));
+    }
+}
+
+-------------------------------------------
+
+@Operation(
+    summary = "Get all accounts",
+    description = "Returns all bank accounts"
+)
+@GetMapping
+public List<Account> getAllAccounts() {
+    return accountService.getAllAccounts();
+}
+----------------------------------------
+
+So the main additional file need to create is: config/OpenApiConfig.java
+
+Everything else—controllers, entities, repositories, 
+and services—is part of your normal Spring Boot application.
+
+
++++++++++++++++++++++++++++++++++++
